@@ -1,0 +1,91 @@
+<!--
+  应用入口页（保留最小页面以满足快应用必须有入口的要求）
+  展示卡片说明与内置连接地址，不做轮询。
+  真正的功能在桌面 4x2 卡片上。
+-->
+
+<template>
+  <div class="page">
+    <div class="card">
+      <text class="title">kakake远程监控</text>
+      <text class="desc">请到桌面添加「kakake远程监控」卡片查看实时状态。</text>
+
+      <div class="row" for="{{ eps }}">
+        <div class="dot"></div>
+        <text class="addr">{{ $item.name }} · {{ $item.ip }}:{{ $item.port }}</text>
+      </div>
+
+      <text class="tip">修改地址：编辑 连接配置.json 后运行「构建」脚本。</text>
+    </div>
+  </div>
+</template>
+
+<script>
+import { ENDPOINTS } from '../../common/endpoints.js'
+
+export default {
+  private: {
+    eps: []
+  },
+  onInit() {
+    this.eps = (ENDPOINTS || []).map((c) => {
+      return { name: c.name || '连接', ip: c.ip, port: c.port || '8787' }
+    })
+  }
+}
+</script>
+
+<style lang="scss">
+.page {
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  background-color: #0a1018;
+  padding: 0 22px;
+
+  .card {
+    flex-direction: column;
+    width: 100%;
+    padding: 24px 20px;
+    border-radius: 22px;
+    background-color: #101823;
+    border: 1px solid #1e2937;
+
+    .title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #eef4fb;
+    }
+    .desc {
+      font-size: 13px;
+      line-height: 19px;
+      color: #8b97a6;
+      margin-top: 8px;
+      margin-bottom: 14px;
+    }
+    .row {
+      align-items: center;
+      margin-top: 8px;
+
+      .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 4px;
+        background-color: #34d399;
+        margin-right: 8px;
+      }
+      .addr {
+        font-size: 13px;
+        color: #cdd8e4;
+      }
+    }
+    .tip {
+      font-size: 11px;
+      color: #55626f;
+      margin-top: 16px;
+    }
+  }
+}
+</style>

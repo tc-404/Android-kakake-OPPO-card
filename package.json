@@ -1,0 +1,51 @@
+{
+  "name": "kakake",
+  "version": "1.0.0",
+  "description": "kakake 远程监控 —— 对接「咔咔珂 外放 API」的快应用 4x2 桌面卡片，支持局域网与远程服务器（http / ws）。",
+  "homepage": "https://github.com/tc-404/kakake",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tc-404/kakake.git"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "scripts": {
+    "start": "hap server --watch",
+    "server": "hap server",
+    "build": "hap build",
+    "release": "hap release",
+    "watch": "hap watch",
+    "debug": "hap debug",
+    "prettier": "prettier --write \"src/**/*.{js,ux,less,scss,css}\""
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/runtime": "^7.12.5",
+    "@types/quickapp": "npm:quickapp-interface@^1.0.0",
+    "hap-toolkit": "^1.9.16",
+    "husky": "^4.3.0",
+    "lint-staged": "^10.5.1",
+    "onchange": "^5.2.0",
+    "prettier": "^1.15.3",
+    "prettier-plugin-ux": "^0.3.0"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "semi": false,
+    "printWidth": 80,
+    "proseWrap": "never",
+    "tabWidth": 2
+  },
+  "keywords": [
+    "kakake",
+    "quickapp",
+    "快应用",
+    "widget",
+    "卡片",
+    "远程监控"
+  ],
+  "browserslist": [
+    "chrome 65"
+  ]
+}

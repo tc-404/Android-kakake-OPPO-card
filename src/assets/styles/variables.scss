@@ -1,0 +1,12 @@
+$brand: #09ba07;
+
+$white: #ffffff;
+$black: #000000;
+$grey: #9393aa;
+$red: #fa0101;
+$yellow: #ffff00;
+
+// 若设计稿基于 360 尺寸
+// 1. 若 manifest.json 里的 designWidth 配置为 1080，则 $size-factor 为 3px
+// 2. 若 manifest.json 里的 designWidth 配置为 360，则 $size-factor 为 1px，此时，也可不使用此变量
+$size-factor: 1px;

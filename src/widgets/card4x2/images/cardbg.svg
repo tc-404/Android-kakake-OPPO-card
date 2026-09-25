@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="150" viewBox="0 0 320 150">
+  <defs>
+    <linearGradient id="base" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#152030"/>
+      <stop offset="0.55" stop-color="#101823"/>
+      <stop offset="1" stop-color="#0C121A"/>
+    </linearGradient>
+    <radialGradient id="dotFade" cx="0.28" cy="0.35" r="0.7">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="1"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="0.72" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#2DD4BF" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#2DD4BF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="stroke" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2DD4BF" stop-opacity="0"/>
+      <stop offset="0.35" stop-color="#2DD4BF" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#5EEAD4" stop-opacity="0.95"/>
+    </linearGradient>
+    <pattern id="dots" x="0" y="0" width="13" height="13" patternUnits="userSpaceOnUse">
+      <circle cx="1.5" cy="1.5" r="1.15" fill="#9FE9DC"/>
+    </pattern>
+    <mask id="dotMask">
+      <rect width="320" height="150" fill="url(#dotFade)"/>
+    </mask>
+  </defs>
+  <rect width="320" height="150" fill="url(#base)"/>
+  <rect width="320" height="150" fill="url(#dots)" fill-opacity="0.16" mask="url(#dotMask)"/>
+  <rect width="320" height="150" fill="url(#glow)"/>
+  <path d="M78 98 C112 56 146 66 180 94 C206 116 234 122 264 86 C286 60 302 64 322 80"
+    fill="none" stroke="url(#stroke)" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="264" cy="86" r="3.2" fill="#5EEAD4"/>
+  <circle cx="264" cy="86" r="7" fill="#5EEAD4" fill-opacity="0.18"/>
+</svg>

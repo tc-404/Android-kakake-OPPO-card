@@ -1,0 +1,4 @@
+<script>
+// 注意: 卡片模式下不会加载 app.ux 文件，如果项目存在全屏快应用页面，可在该文件添加公共逻辑
+export default {}
+</script>

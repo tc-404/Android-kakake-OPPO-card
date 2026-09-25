@@ -1,0 +1,342 @@
+<!--
+  4x2 桌面状态监控卡片（对接「咔咔珂 外放 API v1」）
+  - 卡片直接请求 common/endpoints.js 里内置的连接（本机型桌面卡片不支持存储/文件，故内置地址）
+  - 头像：全部连接的全部账号合并轮播；只有 1 个账号则静态不轮替
+  - 切换头像时，名称 / 状态 / 收发 / 运行时长都跟随当前账号所属连接
+  - 无数据时显示 —
+  点击卡片进入连接总览页 pages/Monitor
+-->
+
+<template>
+  <stack class="stage">
+    <image class="bg" src="./images/cardbg.svg" forcedark="false"></image>
+
+    <div class="content">
+      <div class="header">
+        <div class="carousel">
+          <image class="av a-left" src="{{ avatarPrev }}" if="{{ multi }}"></image>
+          <image class="av a-right" src="{{ avatarNext }}" if="{{ multi }}"></image>
+          <image class="av a-center {{ popCls }}" src="{{ avatarCur }}"></image>
+        </div>
+        <text class="name">{{ curName }}</text>
+        <div class="pill {{ pillCls }}">
+          <div class="pill-dot"></div>
+          <text class="pill-txt">{{ curPhaseText }}</text>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <image class="sic" src="./images/ic_received.svg" forcedark="false"></image>
+          <div class="sbody">
+            <text class="snum">{{ recvText }}</text>
+            <text class="slab">接收</text>
+          </div>
+        </div>
+        <div class="stat">
+          <image class="sic" src="./images/ic_sent.svg" forcedark="false"></image>
+          <div class="sbody">
+            <text class="snum">{{ sentText }}</text>
+            <text class="slab">输出</text>
+          </div>
+        </div>
+        <div class="stat">
+          <image class="sic" src="./images/ic_uptime.svg" forcedark="false"></image>
+          <div class="sbody">
+            <text class="snum">{{ upText }}</text>
+            <text class="slab">运行</text>
+          </div>
+        </div>
+      </div>
+    </div>
+  </stack>
+</template>
+
+<!-- 注意：卡片运行时不会加载 app.ux，请不要在 app.ux 中添加卡片相关逻辑 -->
+<script>
+import { fetchAll, aggregate, fmtCount, shortDur } from '../../common/api.js'
+import { ENDPOINTS } from '../../common/endpoints.js'
+
+export default {
+  private: {
+    accs: [],
+    idx: 0,
+    multi: false,
+    avatarPrev: './images/av_placeholder.svg',
+    avatarCur: './images/av_placeholder.svg',
+    avatarNext: './images/av_placeholder.svg',
+    curName: '连接中…',
+    curPhase: 'reconnecting',
+    curPhaseText: '连接中',
+    recvText: '—',
+    sentText: '—',
+    upText: '—',
+    popCls: 'popA',
+    pillCls: 'p-off'
+  },
+  onInit() {
+    this._loaded = false
+    this.load()
+    this.refreshTimer = setInterval(() => {
+      this.load()
+    }, 20000)
+  },
+  onShow() {
+    this.load()
+  },
+  onDestroy() {
+    if (this.carouselTimer) {
+      clearInterval(this.carouselTimer)
+      this.carouselTimer = null
+    }
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer)
+      this.refreshTimer = null
+    }
+  },
+  load() {
+    if (!ENDPOINTS || ENDPOINTS.length === 0) {
+      this.showPlaceholder('暂无数据', 'disabled', '—')
+      return
+    }
+    if (!this._loaded) {
+      this.showPlaceholder('连接中…', 'reconnecting', '连接中')
+    }
+    fetchAll(ENDPOINTS)
+      .then((res) => {
+        this._loaded = true
+        const snap = aggregate(res)
+        if (snap.accounts.length > 0) {
+          this.setAccounts(snap.accounts)
+        } else if (snap.reachableCount > 0) {
+          this.setAccounts([{
+            name: '无账号',
+            avatar: '',
+            phase: 'disabled',
+            phaseText: '无账号',
+            received: snap.totalReceived,
+            sent: snap.totalSent,
+            uptimeSec: snap.uptimeSec
+          }])
+        } else {
+          this.showPlaceholder('未连接', 'failed', '离线')
+        }
+      })
+      .catch(() => {
+        if (!this._loaded) this.showPlaceholder('未连接', 'failed', '离线')
+      })
+  },
+  showPlaceholder(name, phase, phaseText) {
+    this.setAccounts([{ name: name, avatar: '', phase: phase, phaseText: phaseText }])
+  },
+  setAccounts(accs) {
+    const sameCount = this.accs.length === accs.length && accs.length > 0
+    this.accs = accs
+    this.multi = accs.length > 1
+    if (!sameCount || this.idx >= accs.length) {
+      this.idx = 0
+    }
+    this.applyIndex()
+    this.ensureCarousel()
+  },
+  resolveSrc(acc) {
+    const a = acc && acc.avatar
+    if (a && (a.indexOf('http://') === 0 || a.indexOf('https://') === 0)) return a
+    if (a && a.indexOf('./') === 0) return a
+    return './images/av_placeholder.svg'
+  },
+  applyIndex() {
+    const n = this.accs.length
+    if (n === 0) return
+    const cur = this.accs[this.idx % n]
+    const prev = this.accs[(this.idx - 1 + n) % n]
+    const next = this.accs[(this.idx + 1) % n]
+    this.avatarCur = this.resolveSrc(cur)
+    this.avatarPrev = this.resolveSrc(prev)
+    this.avatarNext = this.resolveSrc(next)
+    this.curName = cur.name
+    this.curPhase = cur.phase
+    this.curPhaseText = cur.phaseText
+    this.pillCls = (cur.phase === 'connected') ? 'p-on' : 'p-off'
+    this.recvText = (cur.received !== undefined && cur.received !== null) ? fmtCount(cur.received) : '—'
+    this.sentText = (cur.sent !== undefined && cur.sent !== null) ? fmtCount(cur.sent) : '—'
+    this.upText = (cur.uptimeSec !== undefined && cur.uptimeSec !== null) ? shortDur(cur.uptimeSec) : '—'
+  },
+  ensureCarousel() {
+    if (this.multi && !this.carouselTimer) {
+      this.carouselTimer = setInterval(() => {
+        this.tick()
+      }, 2200)
+    } else if (!this.multi && this.carouselTimer) {
+      clearInterval(this.carouselTimer)
+      this.carouselTimer = null
+    }
+  },
+  tick() {
+    const n = this.accs.length
+    if (n <= 1) return
+    this.idx = (this.idx + 1) % n
+    this.applyIndex()
+    this.popCls = this.popCls === 'popA' ? 'popB' : 'popA'
+  }
+}
+</script>
+
+<style lang="scss">
+.stage {
+  width: 100%;
+  height: 100%;
+
+  .bg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .content {
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+    padding: 14px 16px;
+  }
+}
+
+/* ---------- 头部 ---------- */
+.header {
+  align-items: center;
+  width: 100%;
+
+  .carousel {
+    width: 92px;
+    height: 46px;
+    flex-shrink: 0;
+
+    .av {
+      position: absolute;
+      top: 3px;
+      left: 26px;
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+    }
+    .a-center {
+      transform: translateX(0px) scale(1);
+      opacity: 1;
+      z-index: 6;
+    }
+    .a-right {
+      transform: translateX(26px) scale(0.72);
+      opacity: 0.5;
+      z-index: 1;
+    }
+    .a-left {
+      transform: translateX(-26px) scale(0.72);
+      opacity: 0.5;
+      z-index: 1;
+    }
+    .popA {
+      animation-name: pop;
+      animation-duration: 480ms;
+      animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .popB {
+      animation-name: pop;
+      animation-duration: 480ms;
+      animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+  }
+
+  .name {
+    flex: 1;
+    margin-left: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 20px;
+    color: #eef4fb;
+    lines: 1;
+    text-overflow: ellipsis;
+  }
+
+  .pill {
+    align-items: center;
+    flex-shrink: 0;
+    height: 22px;
+    padding: 0 9px;
+    border-radius: 11px;
+    border: 1px solid rgba(139, 151, 166, 0.3);
+    background-color: rgba(139, 151, 166, 0.12);
+
+    .pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 3px;
+      background-color: #8b97a6;
+      margin-right: 5px;
+    }
+    .pill-txt {
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 15px;
+      color: #9fb0c0;
+    }
+  }
+  .p-on {
+    background-color: rgba(52, 211, 153, 0.14);
+    border-color: rgba(52, 211, 153, 0.34);
+
+    .pill-dot { background-color: #34d399; }
+    .pill-txt { color: #4ade9b; }
+  }
+  .p-off {
+    background-color: rgba(251, 146, 60, 0.14);
+    border-color: rgba(251, 146, 60, 0.36);
+
+    .pill-dot { background-color: #fb923c; }
+    .pill-txt { color: #fdaf6a; }
+  }
+}
+
+/* ---------- 指标 ---------- */
+.stats {
+  align-items: center;
+  width: 100%;
+
+  .stat {
+    flex: 1;
+    align-items: center;
+
+    .sic {
+      width: 18px;
+      height: 18px;
+      margin-right: 7px;
+    }
+    .sbody {
+      flex-direction: column;
+
+      .snum {
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 19px;
+        color: #f2f6fb;
+      }
+      .slab {
+        font-size: 10px;
+        line-height: 13px;
+        color: #6f7d8d;
+      }
+    }
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.82);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+</style>

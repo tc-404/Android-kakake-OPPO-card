@@ -1,0 +1,26 @@
+node_modules
+build
+dist
+
+.DS_Store
+Thumbs.db
+
+*.log
+*.iml
+.idea/
+.vscode/
+
+.nyc_output
+/coverage
+
+/logs
+
+# 构建产物
+成品/
+
+# IDE / 调试器本地状态
+.ide/
+.quickapp.preview.json
+
+# 签名私钥（不要提交到仓库）
+sign/

@@ -1,0 +1,60 @@
+{
+  "package": "com.kakake.monitor",
+  "name": "kakake远程监控",
+  "versionName": "1.0.0",
+  "versionCode": 1,
+  "minPlatformVersion": 1090,
+  "icon": "/assets/images/logo.png",
+  "features": [
+    { "name": "system.device" },
+    { "name": "system.router" },
+    { "name": "system.network" },
+    { "name": "system.fetch" }
+  ],
+  "permissions": [
+    {
+      "origin": "*"
+    }
+  ],
+  "config": {
+    "logLevel": "debug",
+    "designWidth": 360
+  },
+  "router": {
+    "entry": "pages/Home",
+    "pages": {
+      "pages/Home": {
+        "component": "index"
+      }
+    },
+    "widgets": {
+      "widgets/card4x2": {
+        "name": "kakake远程监控",
+        "description": "kakake 远程运行状态监控 4x2 桌面卡片",
+        "component": "index",
+        "path": "/widgets/card4x2",
+        "minPlatformVersion": 1090,
+        "params": {
+          "size": "4x2"
+        },
+        "targetManufacturers": ["vivo", "OPPO", "xiaomi", "honor"],
+        "features": [
+          { "name": "system.device" },
+          { "name": "system.fetch" },
+          { "name": "system.network" }
+        ]
+      }
+    }
+  },
+  "display": {
+    "titleBarBackgroundColor": "#0a1018",
+    "titleBarTextColor": "#eef4fb",
+    "menu": false,
+    "pages": {
+      "pages/Home": {
+        "titleBarText": "kakake远程监控",
+        "menu": false
+      }
+    }
+  }
+}
